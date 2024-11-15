@@ -2,7 +2,7 @@ import socket
 import threading
 
 def receive_from_relay2():
-    host = '127.0.0.1'
+    host = '10.128.40.94'
     port = 54321  # Final receiver listening port (fixed)
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
