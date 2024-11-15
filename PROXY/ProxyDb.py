@@ -1,6 +1,14 @@
 import socket
 import struct
 import threading
+import json
+from AES import aes
+
+
+
+
+
+
 
 # Server configuration
 HOST = '10.128.40.94'  # Server address
@@ -49,8 +57,48 @@ def handle_client(client_socket):
 
             # Respond to the client
             response = "Message received!"  # Just an example response
-            send_message(client_socket, response)
+
+                        # Step 1: Read the file and parse the data
+            filename = 'key.pub'
+            key_data = {'p': [], 'q': [], 'N': [], 'd': [], 'h': []}
+            # Open and read the file line by line
+            with open(filename, 'r') as file:
+                for line in file:
+                    line = line.strip()  # Remove leading and trailing whitespace
+                    
+                    if line.startswith('#'):
+                        # Remove the '#' comment symbol and split the line into key and value
+                        line = line[2:].strip()  # Remove the '# ' at the start
+                        
+                        # Check for the specific keys and process them
+                        if 'p' in line:
+                            # Extract and convert to list of integers
+                            key_data['p'] = [int(x) for x in line.split(':::')[1].strip().split()]
+                            print(f"p: {key_data['p']}")
+                        elif 'q' in line:
+                            # Extract and convert to list of integers
+                            key_data['q'] = [int(x) for x in line.split(':::')[1].strip().split()]
+                            print(f"q: {key_data['q']}")
+                        elif 'N' in line:
+                            # Extract and convert to list of integers
+                            key_data['N'] = [int(x) for x in line.split(':::')[1].strip().split()]
+                            print(f"N: {key_data['N']}")
+                        elif 'd' in line:
+                            # Extract and convert to list of integers
+                            key_data['d'] = [int(x) for x in line.split(':::')[1].strip().split()]
+                            print(f"d: {key_data['d']}")
+                        elif 'h' in line:
+                            # Extract and convert to list of integers
+                            key_data['h'] = [int(x) for x in line.split(':::')[1].strip().split()]
+                            print(f"h: {key_data['h']}")
+            json_data = json.dumps(key_data, separators=(',', ':'))
+
+
             
+
+            # Printing the serialized data in one line
+            print(json_data)    
+            send_message(client_socket, json_data)
             # Exit condition for the server: if the message is "exit"
             if message.lower() == 'exit':
                 print("Closing connection.")
