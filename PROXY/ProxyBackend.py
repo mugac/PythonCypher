@@ -56,18 +56,11 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             response = receive_message(client_socket)
             deserializedResponse = json.loads(response)
             print(f"Server: {deserializedResponse}")
-            
-            print(deserializedResponse.get('p'))
-            p, q, N, d, h = deserializedResponse.get('p'), deserializedResponse.get('q'), deserializedResponse.get('N'), deserializedResponse.get('d'), deserializedResponse.get('h')  
-            
+            print(f"count {len(deserializedResponse)}")
             with open('key.pub', 'w') as file:
-                file.write(f"# p ::: {p}\n")
-                file.write(f"# q ::: {q}\n")
-                file.write(f"# N ::: {N}\n")
-                file.write(f"# d ::: {d}\n")
-                file.write(f"# h ::: {h}\n")
-
-
+                for key in deserializedResponse:
+                    
+                    file.write(f"# {key} ::: {' '.join(str(x) for x in deserializedResponse[key])}\n")
 
             # Exit condition: If user types 'exit', break the loop
             if message.lower() == 'exit':
