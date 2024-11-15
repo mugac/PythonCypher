@@ -71,7 +71,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
         # Accept incoming client connections
         client_socket, addr = server_socket.accept()
         print(f"Connected to {addr}")
-        
         # Handle the client in a separate thread so the server can listen and send at the same time
         client_thread = threading.Thread(target=handle_client, args=(client_socket,))
         client_thread.start()

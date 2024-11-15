@@ -1,5 +1,6 @@
 import socket
 import struct
+import json
 
 # Server configuration
 HOST = '10.128.40.94'  # Server address
@@ -53,7 +54,20 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
 
             # Receive acknowledgment or response from the server (multipart)
             response = receive_message(client_socket)
-            print(f"Server: {response}")
+            deserializedResponse = json.loads(response)
+            print(f"Server: {deserializedResponse}")
+            
+            print(deserializedResponse.get('p'))
+            p, q, N, d, h = deserializedResponse.get('p'), deserializedResponse.get('q'), deserializedResponse.get('N'), deserializedResponse.get('d'), deserializedResponse.get('h')  
+            
+            with open('key.pub', 'w') as file:
+                file.write(f"# p ::: {p}\n")
+                file.write(f"# q ::: {q}\n")
+                file.write(f"# N ::: {N}\n")
+                file.write(f"# d ::: {d}\n")
+                file.write(f"# h ::: {h}\n")
+
+
 
             # Exit condition: If user types 'exit', break the loop
             if message.lower() == 'exit':
