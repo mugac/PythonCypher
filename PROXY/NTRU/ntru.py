@@ -112,7 +112,7 @@ def security_check(N1: NTRUdecrypt) -> bool:
     return len(factors) == 0 and possible_keys > 2 ** 80
 
 
-def encrypt(name: str, message: str, check_time: bool = False) -> str:
+def encrypt(name: str, message: str, check_time: bool = False, E : NTRUencrypt = None) -> str:
     """
     Encrypt a message using the public key.
 
@@ -197,7 +197,7 @@ def attack_simulation(N1):
 if __name__ == "__main__":
     # Example usage with check_time enabled
     generate_keys("key", mode="moderate", skip_check=True, debug=True, check_time=True)
-    enc = encrypt("key", "test", check_time=True)
-    print("Encrypted message:", enc)
-    dec = decrypt("key",enc,check_time=True)
-    print("Decrypted message:", dec)
+    # enc = encrypt("key", "test", check_time=True)
+    # print("Encrypted message:", enc)
+    # dec = decrypt("key",enc,check_time=True)
+    # print("Decrypted message:", dec)

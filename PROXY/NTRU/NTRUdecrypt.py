@@ -186,7 +186,7 @@ class NTRUdecrypt:
             if len(factor_int(self.h[-1])) == 0:
                 break
             self.genfg()
-
+# not needed
     @time_function
     def writePub(self, filename="key"):
         """
@@ -195,7 +195,7 @@ class NTRUdecrypt:
         pubHead = "p ::: " + str(self.p) + "\nq ::: " + str(self.q) + "\nN ::: " + str(self.N) \
                   + "\nd ::: " + str(self.dr) + "\nh :::"
         np.savetxt(filename + ".pub", self.h, newline=" ", header=pubHead, fmt="%s")
-
+# not needed
     @time_function
     def readPub(self, filename="key.pub"):
         """
@@ -210,7 +210,7 @@ class NTRUdecrypt:
         self.I = np.zeros((self.N + 1,), dtype=int)
         self.I[self.N] = -1
         self.I[0] = 1
-
+# not needed
     @time_function
     def writePriv(self, filename="key"):
         """
@@ -220,7 +220,7 @@ class NTRUdecrypt:
                    + str(self.N) + "\ndf ::: " + str(self.df) + "\ndg ::: " + str(self.dg) \
                    + "\nd ::: " + str(self.dr) + "\nf/fp/fq/g :::"
         np.savetxt(filename + ".priv", (self.f, self.fp, self.fq, self.g), header=privHead, newline="\n", fmt="%s")
-
+# not needed
     @time_function
     def readPriv(self, filename="key.priv"):
         """

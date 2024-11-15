@@ -2,8 +2,6 @@ import socket
 import struct
 import threading
 import json
-from AES import aes
-
 
 
 
@@ -54,9 +52,6 @@ def handle_client(client_socket):
             # Receive the message from the client
             message = receive_message(client_socket)
             print(f"Received: {message}")
-
-            # Respond to the client
-            response = "Message received!"  # Just an example response
 
                         # Step 1: Read the file and parse the data
             filename = 'key.pub'

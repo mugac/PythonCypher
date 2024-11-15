@@ -1,0 +1,5 @@
+aes
+numpy
+colorama
+sympy==1.10
+
