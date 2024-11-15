@@ -1,52 +1,42 @@
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
 import os
-import sys
-import aes
-# import pq_ntru
-sys.path.append(os.path.abspath("./NTRU"))
-# sys.path.append(os.path.abspath("./AES"))
 
-from ntru import generate_keys,encrypt,decrypt
+# Generate a random 256-bit AES key (32 bytes)
+key = os.urandom(32)
 
-# # Use the function
-# result = my_function()
-# print(result)
+# Convert the key to a hexadecimal string and format it with "0x" prefix
+formatted_key = "0x" + key.hex()
+print("Generated AES Key:", formatted_key)
 
-# from ntru import generate_keys,encrypt,decrypt
-generate_keys("key", mode="moderate", skip_check=True, debug=True)
-# generate_keys("key", mode="moderate", skip_check=True, debug=True, check_time=True)
+# Example plaintext data to encrypt
+plaintext = b'This is a secret message!'
 
-# example of using mode of operation
-mk = 0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
-mk_arr = aes.utils.int2arr8bit(mk, 32)
-pt = 0x00112233445566778899aabbccddeeff
-pt_arr = aes.utils.int2arr8bit(pt, 16)
+# Generate a random 128-bit IV (16 bytes) for AES encryption
+iv = os.urandom(16)
 
+# Encrypt the plaintext using AES in CBC mode
+cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+encryptor = cipher.encryptor()
 
-cipher = aes.aes(mk, 256, mode='CTR', padding='PKCS#7')
+# Ensure the plaintext is a multiple of block size (16 bytes for AES)
+# Padding plaintext to make it a multiple of the block size (AES block size is 16 bytes)
+padding_length = 16 - len(plaintext) % 16
+padded_plaintext = plaintext + bytes([padding_length]) * padding_length
 
-# notice: enc/dec can only 'list'  !! 
-ct_arr = cipher.enc(pt_arr)
-print("0x"+hex(aes.utils.arr8bit2int(ct_arr))[2:].zfill(32))
+# Perform the encryption
+ciphertext = encryptor.update(padded_plaintext) + encryptor.finalize()
 
-pr_arr = cipher.dec(ct_arr)
-print("0x"+hex(aes.utils.arr8bit2int(pr_arr))[2:].zfill(32))
+# Output the encrypted data and IV
+print("Ciphertext:", ciphertext.hex())
+print("IV:", iv.hex())
 
-# # Path to the virtual environment's Python interpreter
-# venv_python = os.path.join("all", "bin", "python")  # Linux/Mac
-# # venv_python = os.path.join("venv", "Scripts", "python")  # Windows
+# Decrypt the ciphertext
+decryptor = cipher.decryptor()
+decrypted_data = decryptor.update(ciphertext) + decryptor.finalize()
 
-# # Path to the script to execute
-# script_to_run = os.path.join("NTRU/", "ntru.py")
+# Remove the padding
+padding_length = decrypted_data[-1]
+decrypted_data = decrypted_data[:-padding_length]
 
-# generate_keys()
-
-
-# # Execute the script and capture its output
-# result = subprocess.run([venv_python, script_to_run], capture_output=True, text=True)
-
-# # Get the standard output and error
-# output = result.stdout
-# error = result.stderr
-
-# print("Output:", output)
-# print("Error:", error)
+print("Decrypted data:", decrypted_data.decode())
