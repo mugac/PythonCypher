@@ -5,7 +5,9 @@ mk_arr = aes.utils.int2arr8bit(mk, 32)
 pt = 0x00112233445566778899aabbccddeeff
 pt_arr = aes.utils.int2arr8bit(pt, 16)
 
-cipher = aes.aes(mk, 256, mode='ECB', padding='PKCS#7')
+cipher = aes.aes(mk, 256, mode='CBC', padding='PKCS#7')
+
+
 
 print("Key"+hex(mk)[2:].zfill(16))
 print("Pla"+hex(pt)[2:].zfill(32))
@@ -15,3 +17,4 @@ print("Cyp"+hex(aes.utils.arr8bit2int(ct_arr))[2:].zfill(32))
 
 pr_arr = cipher.dec(ct_arr)
 print("Dec"+hex(aes.utils.arr8bit2int(pr_arr))[2:].zfill(32))
+print(cipher.iv)
