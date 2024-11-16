@@ -6,6 +6,7 @@ import sys
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 import time
+import threading
 # import pq_ntru
 sys.path.append(os.path.abspath("./NTRU"))
 # sys.path.append(os.path.abspath("./AES"))
@@ -17,7 +18,92 @@ from ntru import generate_keys,encrypt,decrypt
 HOST = '127.0.0.1'  # Server address
 PORT = 55712           # Server's port
 
+class ClientThread(threading.Thread):
+    def __init__(self, clientSocket, targetHost, targetPort,aes_key,iv):
+        threading.Thread.__init__(self)
+        self.__clientSocket = clientSocket
+        self.__targetHost = targetHost
+        self.__targetPort = targetPort
+        self.__aeskey = aes_key
+        self.__iv = iv
 
+
+    def run(self):
+        print("Client Thread started")
+        self.__clientSocket.setblocking(0)
+
+        targetHostSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        targetHostSocket.connect((self.__targetHost, self.__targetPort))
+        targetHostSocket.setblocking(0)
+
+        clientData = b''
+        targetHostData = b''
+        terminate = False
+        while not terminate and not terminateAll:
+            inputs = [self.__clientSocket, targetHostSocket]
+            outputs = []
+
+            if len(clientData) > 0:
+                outputs.append(self.__clientSocket)
+
+            if len(targetHostData) > 0:
+                outputs.append(targetHostSocket)
+
+            try:
+                inputsReady, outputsReady, errorsReady = select.select(inputs, outputs, [], 1.0)
+            except Exception as e:
+                print(f"Exception during select: {e}")
+                break
+
+            for inp in inputsReady:
+                if inp == self.__clientSocket:
+                    try:
+                        data = self.__clientSocket.recv(4096)
+                    except Exception as e:
+                        print(f"Exception while receiving from client: {e}")
+
+                    if data:
+                        if len(data) > 0:
+                            targetHostData += data
+                        else:
+                            terminate = True
+                elif inp == targetHostSocket:
+                    try:
+                        data = targetHostSocket.recv(4096)
+                    except Exception as e:
+                        print(f"Exception while receiving from target host: {e}")
+
+                    if data:
+                        if len(data) > 0:
+                            clientData += data
+                        else:
+                            terminate = True
+
+            for out in outputsReady:
+                if out == self.__clientSocket and len(clientData) > 0:
+                    try:
+                        # AES decryption of data received from target host
+                        key = b'YourSharedAESKey123'  # This should be the shared AES key (hardcoded for now)
+                        decrypted_data =  self.aes_encrypt(cipheredtext)
+                        self.__clientSocket.send(decrypted_data)
+                        clientData = b''  # Clear data after sending
+                       
+                    except Exception as e:
+                        print(f"Exception while sending to client: {e}")
+                elif out == targetHostSocket and len(targetHostData) > 0:
+                    try:
+                        # AES encryption of data from the client
+                        iv = os.urandom(16)  # Generate new IV for each message
+                        key = b'YourSharedAESKey123'  # Shared AES key (this should be securely exchanged)
+                        ciphertext = aes_encrypt(aes_key, iv, targetHostData)
+                        targetHostSocket.send(iv + ciphertext)  # Send IV + ciphertext
+                        targetHostData = b''  # Clear data after sending
+                    except Exception as e:
+                        print(f"Exception while sending to target host: {e}")
+
+        self.__clientSocket.close()
+        targetHostSocket.close()
+        print("ClientThread terminating")
 
 def getkeys(filename):
  #   filename = 'key.pub'
@@ -121,10 +207,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
 
             # Generate aes key
             # Generate a random 256-bit AES key (32 bytes)
-            key = os.urandom(32)
+            aes_key = os.urandom(32)
 
             # Convert the key to a hexadecimal string and format it with "0x" prefix
-            formatted_key = "0x" + key.hex()
+            formatted_key = "0x" + aes_key.hex()
             print("Generated AES Key:", formatted_key)
 
             #iv
@@ -138,13 +224,22 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
 
             os.remove("./key2.pub")
 
+
+            #repeater
+            localHost = '10.128.40.94'
+            localPort = 59123
+            targetHost = '10.128.40.94'
+            targetPort = 55213
+
+
             exited = False
             while True:
                 # Decrypt the ciphertext
+                
                 cipheredtext = bytes.fromhex(receive_message(client_socket))
 
                 # FUNCTION
-                cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+                cipher = Cipher(algorithms.AES(aes_key), modes.CBC(iv), backend=default_backend())
                 decryptor = cipher.decryptor()
                 decrypted_data = decryptor.update(cipheredtext) + decryptor.finalize()
                 # Remove the padding
@@ -157,6 +252,30 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
                 if cipheredtext == "exit":
                     exited = True
                     break
+                
+                #repeater
+                 # Replace with the actual AES key and IV from the handshake
+                aes_key = b'your_16_byte_aes_key'  # 16 bytes for AES-128, adjust as needed
+                iv = b'your_16_byte_iv'  # 16 bytes IV for CBC mode
+                
+                serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                serverSocket.bind((localHost, localPort))
+                serverSocket.listen(5)
+                print("Waiting for client...")
+                while True:
+                    try:
+                        clientSocket, address = serverSocket.accept()
+                    except KeyboardInterrupt:
+                        print("\nTerminating...")
+                        terminateAll = True
+                        break
+                    # Handle the client in a separate thread
+                    ClientThread(clientSocket, targetHost, targetPort, aes_key, iv).start()
+                    
+                serverSocket.close()
+
+
+
 
                 #LISTEN HERE FOR SQL STATEMENTS
           

@@ -2,6 +2,9 @@ import socket
 import threading
 import select
 import sys
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
+
 
 terminateAll = False
 
@@ -60,21 +63,25 @@ class ClientThread(threading.Thread):
                         
                     if data:
                         if len(data) > 0:
-                            clientData += data
+                            decrypted_data = self.decrypt_data(data)
+                            clientData += decrypted_data
                         else:
                             terminate = True
                         
             for out in outputsReady:
                 if out == self.__clientSocket and len(clientData) > 0:
                     try:
-                        bytesWritten = self.__clientSocket.send(clientData)
+                        #encrypt data here
+                        encrypted_data = self.encrypt_data(clientData)
+                        bytesWritten = self.__clientSocket.send(encrypted_data)
                         if bytesWritten > 0:
                             clientData = clientData[bytesWritten:]
                     except Exception as e:
                         print(f"Exception while sending to client: {e}")
                 elif out == targetHostSocket and len(targetHostData) > 0:
                     try:
-                        bytesWritten = targetHostSocket.send(targetHostData)
+                        encrypted_data = self.encrypt_data(targetHostData)
+                        bytesWritten = targetHostSocket.send(encrypted_data)
                         if bytesWritten > 0:
                             targetHostData = targetHostData[bytesWritten:]
                     except Exception as e:
