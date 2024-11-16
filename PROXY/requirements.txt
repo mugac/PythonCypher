@@ -2,3 +2,4 @@ numpy
 colorama
 sympy==1.10
 cryptography
+mariadb
