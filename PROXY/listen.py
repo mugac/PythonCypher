@@ -2,7 +2,8 @@ import socket
 
 # Server setup
 HOST = '10.128.40.94'  # Localhost
-PORT = 55231        # Port to listen on
+PORT =  55213
+        # Port to listen on
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
     server_socket.bind((HOST, PORT))  # Bind to the host and port

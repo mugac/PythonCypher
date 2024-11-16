@@ -8,8 +8,8 @@ try:
     conn = mariadb.connect(
         user="nuklearniuser",
         password="P7x5kMScw",
-        host="10.128.40.90",
-        port=3306,
+        host="10.128.40.94",
+        port=12345,
         database="nuklearni_okurky"
     )
     print("Connection to MariaDB successful!")
