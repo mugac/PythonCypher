@@ -184,6 +184,8 @@ def handle_client(client_socket):
                 #send_message(client_socket,"0x" + ciphertext.hex())
                 send_message(client_socket,ciphertext.hex())
 
+                # LISTEN HERE FOR DB
+
             
             
 

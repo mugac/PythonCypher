@@ -141,13 +141,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             exited = False
             while True:
                 # Decrypt the ciphertext
-                print("heeeere")
                 cipheredtext = bytes.fromhex(receive_message(client_socket))
-                print("heeeere222")
                 cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
                 decryptor = cipher.decryptor()
                 decrypted_data = decryptor.update(cipheredtext) + decryptor.finalize()
-                print("heeeere2")
                 # Remove the padding
                 padding_length = decrypted_data[-1]
                 decrypted_data = decrypted_data[:-padding_length]
@@ -157,6 +154,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
                 if cipheredtext == "exit":
                     exited = True
                     break
+
+                #LISTEN HERE FOR SQL STATEMENTS
           
 
 
