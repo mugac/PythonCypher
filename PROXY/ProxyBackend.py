@@ -96,8 +96,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
 
     #        generate new pair of keys
     #        generate_keys("key", mode="moderate", skip_check=True, debug=True)
-          #  generate_keys("key", mode="moderate", skip_check=True, debug=True)
-            time.sleep(2)
+            generate_keys("key", mode="moderate", skip_check=True, debug=True)
+            # time.sleep(2)
             pub_key = getkeys("key.pub")
             # Send the message (multipart)
             send_message(client_socket, message)
@@ -106,9 +106,12 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             response = receive_message(client_socket)
             deserializedResponse = json.loads(response)
             with open('key2.pub', 'w') as file:
-                for key in deserializedResponse:
-                    
-                    file.write(f"# {key} ::: {' '.join(str(x) for x in deserializedResponse[key])}\n")
+                #for key in deserializedResponse:
+                    file.write(f"# p ::: {' '.join(str(x) for x in deserializedResponse["p"])}\n")
+                    file.write(f"# q ::: {' '.join(str(x) for x in deserializedResponse["q"])}\n")
+                    file.write(f"# N ::: {' '.join(str(x) for x in deserializedResponse["N"])}\n")
+                    file.write(f"# d ::: {' '.join(str(x) for x in deserializedResponse["d"])}\n")
+                    file.write(f"# h ::: {' '.join(str(x) for x in deserializedResponse["h"])} ")
             send_message(client_socket, response)
             res = receive_message(client_socket)
             if res != "200":
@@ -124,17 +127,41 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             formatted_key = "0x" + key.hex()
             print("Generated AES Key:", formatted_key)
 
+            #iv
+            iv = os.urandom(16)
+
             #encrypt using ntru and send
             encrypted_aes_key = encrypt("key2",formatted_key)
 
             send_message(client_socket,encrypted_aes_key)
+            send_message(client_socket,iv.hex())
 
-            # os.remove("./key2.pub")
+            os.remove("./key2.pub")
+
+            exited = False
+            while True:
+                # Decrypt the ciphertext
+                print("heeeere")
+                cipheredtext = bytes.fromhex(receive_message(client_socket))
+                print("heeeere222")
+                cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+                decryptor = cipher.decryptor()
+                decrypted_data = decryptor.update(cipheredtext) + decryptor.finalize()
+                print("heeeere2")
+                # Remove the padding
+                padding_length = decrypted_data[-1]
+                decrypted_data = decrypted_data[:-padding_length]
+
+                print("Decrypted data:", decrypted_data.decode())
+                # decrypt messages using aes
+                if cipheredtext == "exit":
+                    exited = True
+                    break
           
 
 
             # Exit condition: If user types 'exit', break the loop
-            if message.lower() == 'exit':
+            if exited == True:
                 print("Closing connection.")
                 break
 

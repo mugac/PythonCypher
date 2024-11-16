@@ -1,6 +1,8 @@
 import socket
 import struct
 import threading
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
 import json
 import os
 import sys
@@ -148,10 +150,40 @@ def handle_client(client_socket):
             # Exit condition for the server: if the message is "exit"
 
             #validovat
-            aes_key = decrypt("key",receive_message(client_socket))
+            aes_key =  bytes.fromhex((decrypt("key",receive_message(client_socket)))[2:])
+            # print(receive_message(client_socket))
+            iv = bytes.fromhex(receive_message(client_socket))
+            print(aes_key)
+            os.remove("./key.priv")
+            os.remove("./key.pub")
+   
 
-            # os.remove("./key.priv")
-            # os.remove("./key.pub")
+            while True:
+                #encrypt messages using aes
+                # Encrypt the plaintext using AES in CBC mode
+               
+               # message to be sent
+                message = "poggers"
+
+                # Convert message to bytes
+                message_bytes = message.encode('utf-8')
+
+                # Padding plaintext to make it a multiple of the block size (AES block size is 16 bytes)
+                padding_length = 16 - len(message_bytes) % 16
+                padded_plaintext = message_bytes + bytes([padding_length]) * padding_length
+
+                # Create the cipher object
+                cipher = Cipher(algorithms.AES(aes_key), modes.CBC(iv), backend=default_backend())
+                encryptor = cipher.encryptor()
+
+                # Perform the encryption
+                ciphertext = encryptor.update(padded_plaintext) + encryptor.finalize()
+
+                # Output the encrypted text
+
+                #send_message(client_socket,"0x" + ciphertext.hex())
+                send_message(client_socket,ciphertext.hex())
+
             
             
 
