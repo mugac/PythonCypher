@@ -165,6 +165,9 @@ def handle_client(client_socket):
                # message to be sent
                 message = "poggers"
 
+
+                # FUNCTION
+
                 # Convert message to bytes
                 message_bytes = message.encode('utf-8')
 
@@ -179,8 +182,9 @@ def handle_client(client_socket):
                 # Perform the encryption
                 ciphertext = encryptor.update(padded_plaintext) + encryptor.finalize()
 
-                # Output the encrypted text
+                  #  END OF FUNCTION
 
+                # Output the encrypted text
                 #send_message(client_socket,"0x" + ciphertext.hex())
                 send_message(client_socket,ciphertext.hex())
 

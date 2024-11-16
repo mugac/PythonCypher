@@ -142,12 +142,15 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             while True:
                 # Decrypt the ciphertext
                 cipheredtext = bytes.fromhex(receive_message(client_socket))
+
+                # FUNCTION
                 cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
                 decryptor = cipher.decryptor()
                 decrypted_data = decryptor.update(cipheredtext) + decryptor.finalize()
                 # Remove the padding
                 padding_length = decrypted_data[-1]
                 decrypted_data = decrypted_data[:-padding_length]
+                #  END OF FUNCTION
 
                 print("Decrypted data:", decrypted_data.decode())
                 # decrypt messages using aes
